@@ -20,9 +20,6 @@ def slider():
     root = Tk()
     root.title('Slider Box')
 
-
-
-
     def update(number):
         global left_slider
         global right_slider

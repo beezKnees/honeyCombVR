@@ -10,9 +10,11 @@ valueL = 18
 multiplier = 4
 left_slider = 0
 right_slider = 0
+two_cams = True
 
 
-cam = cv2.VideoCapture(0)
+cam2 = cv2.VideoCapture(0)
+
 
 def slider():
     #from PIL import ImageTk,Image
@@ -101,6 +103,7 @@ def eye_main():
 
 
         check, frame = cam.read()
+        check2, frame2 = cam2.read()
         roi1 = frame[270:300, 323:380]#[200:300, 180:480]
 
         roi2 = frame[270:300, 265:322]#[200:300, 180:480]
@@ -118,6 +121,7 @@ def eye_main():
         hori = cv2.resize(hori, (width, height))
 
         cv2.imshow("hori", hori)
+        cv2.imshow("test", frame2)
 
 
         key = cv2.waitKey(1)

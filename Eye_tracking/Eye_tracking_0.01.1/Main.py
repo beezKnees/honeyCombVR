@@ -11,7 +11,7 @@ multiplier = 4
 left_slider = 0
 right_slider = 0
 two_cams = True
-debug = False
+debug = True
 
 cam = cv2.VideoCapture(0)
 #cam2 = cv2.VideoCapture(2)
@@ -35,8 +35,6 @@ def slider():
 
 
     def leave():
-        os.system('CLS')
-        print('leaving program...')
         os._exit(1)
 
 
@@ -99,6 +97,7 @@ def eye_main():
 
         if (debug):
             os.system('CLS')
+            print("Having debug set to True does slow down the program")
             print("left: ", left_slider)
             print("right: ", right_slider)
             timeTaken = et - st
@@ -134,6 +133,7 @@ def eye_main():
 
         hori = cv2.resize(hori, (width, height))
 
+        hori = cv2.flip(hori, 1)
         cv2.imshow("hori", hori)
         et = time.time()
 

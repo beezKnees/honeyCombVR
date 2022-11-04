@@ -5,6 +5,8 @@ import threading
 import time
 from tkinter import *
 import os
+global is_on
+is_on = False
 valueR = 28
 valueL = 18
 multiplier = 4
@@ -37,6 +39,15 @@ def slider():
     def leave():
         os._exit(1)
 
+    def norm():
+        global is_on
+        # Determine is on or off
+        if is_on:
+            is_on = False
+        else:
+            is_on = True
+
+
 
 
     vertical = Scale(root, from_=0, to=100, command=update)
@@ -47,6 +58,7 @@ def slider():
 
 
     update = Button(root, text="Click me to exit", command=leave).pack()
+    on_button = Button(root, text="Normalize", command = norm).pack()
 
 
 
@@ -58,11 +70,17 @@ def slider():
 
 
 def eye(eye, value):
+    global is_on
     y = 0
     x = 0
     roi = cv2.cvtColor(eye, cv2.COLOR_BGR2GRAY)
     rows, cols = roi.shape
-    roi = cv2.GaussianBlur(roi, (5, 5), 0)
+    roi = cv2.bilateralFilter(roi, 9, 20, 20)
+
+    if is_on:
+        #helps normalize the image in different lighting
+        norm_img = np.zeros((800,800))
+        roi = cv2.normalize(roi,  norm_img, 50, 255, cv2.NORM_MINMAX)
 
 
 
@@ -84,6 +102,7 @@ def eye(eye, value):
 def eye_main():
     global left_slider
     global right_slider
+    global is_on
     valueR = 0
     valueL = 0
     multiplier = 4
@@ -98,17 +117,15 @@ def eye_main():
         if (debug):
             os.system('CLS')
             print("Having debug set to True does slow down the program")
-            print("left: ", left_slider)
-            print("right: ", right_slider)
+            print("Left: ", left_slider)
+            print("Right: ", right_slider)
+            print("Normalizing: ", is_on)
             timeTaken = et - st
             if (timeTaken != 0.0):
                 print("Runtime: ", timeTaken)
                 timeOld = timeTaken
             else:
                 print("Runtime: ", timeOld)
-            
-        left_old = left_slider
-        right_old = right_slider
 
         valueR = right_slider
         valueL = left_slider

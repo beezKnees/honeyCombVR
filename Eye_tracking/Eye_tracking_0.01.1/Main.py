@@ -35,7 +35,9 @@ def slider():
 
 
     def leave():
-        exit()
+        os.system('CLS')
+        print('leaving program...')
+        os._exit(1)
 
 
 

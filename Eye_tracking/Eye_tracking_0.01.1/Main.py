@@ -11,9 +11,10 @@ multiplier = 4
 left_slider = 0
 right_slider = 0
 two_cams = True
+debug = False
 
-
-cam2 = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(0)
+#cam2 = cv2.VideoCapture(2)
 
 
 def slider():
@@ -88,13 +89,23 @@ def eye_main():
     multiplier = 4
     left_old = 0
     right_old = 0
+    et = 0
+    st = 0
+    timeOld = 0
 
     while True:
 
-        if (left_slider != left_old) or (right_slider != right_old):
+        if (debug):
             os.system('CLS')
             print("left: ", left_slider)
             print("right: ", right_slider)
+            timeTaken = et - st
+            if (timeTaken != 0.0):
+                print("Runtime: ", timeTaken)
+                timeOld = timeTaken
+            else:
+                print("Runtime: ", timeOld)
+            
         left_old = left_slider
         right_old = right_slider
 
@@ -103,7 +114,8 @@ def eye_main():
 
 
         check, frame = cam.read()
-        check2, frame2 = cam2.read()
+        st = time.time()
+        #check2, frame2 = cam2.read()
         roi1 = frame[270:300, 323:380]#[200:300, 180:480]
 
         roi2 = frame[270:300, 265:322]#[200:300, 180:480]
@@ -121,20 +133,15 @@ def eye_main():
         hori = cv2.resize(hori, (width, height))
 
         cv2.imshow("hori", hori)
-        cv2.imshow("test", frame2)
+        et = time.time()
+
+        #cv2.imshow("test", frame2)
 
 
         key = cv2.waitKey(1)
         if key == 27:
             break
 
-        elif key == 108:
-            valueL = int(input("pick a new value for left eye: "))
-
-        elif key == 114:
-            valueR = int(input("pick a new value for right eye: "))
-        else:
-            key = None
 
 t1 = threading.Thread(target=eye_main)
 t1.start()

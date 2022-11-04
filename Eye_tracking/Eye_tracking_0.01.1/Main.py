@@ -137,7 +137,6 @@ def eye_main():
 
         #cv2.imshow("test", frame2)
 
-
         key = cv2.waitKey(1)
         if key == 27:
             break

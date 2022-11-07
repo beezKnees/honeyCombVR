@@ -5,8 +5,7 @@ import threading
 import time
 from tkinter import *
 import os
-global is_on
-is_on = False
+is_on = True
 valueR = 28
 valueL = 18
 multiplier = 4
@@ -15,13 +14,28 @@ right_slider = 0
 two_cams = True
 debug = True
 
-cam = cv2.VideoCapture(0)
+
+cam = cv2.VideoCapture(2, cv2.CAP_DSHOW)
 #cam2 = cv2.VideoCapture(2)
+check, frame = cam.read()
 
 
+def calibrate():
+    if __name__ == '__main__' :
+        
+        # Read image
+        check, im = cam.read()
+        
+    
+        # Select ROI
+        r = cv2.selectROI(im)
+    
+        cv2.waitKey(0)
+        #cv2.destroyWindow("Image")
+        cv2.destroyWindow("ROI selector")
+
+        return r
 def slider():
-    #from PIL import ImageTk,Image
-
     root = Tk()
     root.title('Slider Box')
 
@@ -31,9 +45,6 @@ def slider():
 
         left_slider = vertical.get()
         right_slider = vertical2.get()
-        #os.system('CLS')
-        #print("left: ", left_slider)
-        #print("right: ", right_slider)
 
 
     def leave():
@@ -41,7 +52,8 @@ def slider():
 
     def norm():
         global is_on
-        # Determine is on or off
+
+        # Determine if button is on or off
         if is_on:
             is_on = False
         else:
@@ -50,15 +62,16 @@ def slider():
 
 
 
-    vertical = Scale(root, from_=0, to=100, command=update)
+    vertical = Scale(root, from_=0, to=150, command=update)
     vertical.pack()
 
-    vertical2 = Scale(root, from_=0, to=100, command=update)
+    vertical2 = Scale(root, from_=0, to=150, command=update)
     vertical2.pack()
 
 
     update = Button(root, text="Click me to exit", command=leave).pack()
     on_button = Button(root, text="Normalize", command = norm).pack()
+
 
 
 
@@ -80,7 +93,7 @@ def eye(eye, value):
     if is_on:
         #helps normalize the image in different lighting
         norm_img = np.zeros((800,800))
-        roi = cv2.normalize(roi,  norm_img, 50, 255, cv2.NORM_MINMAX)
+        roi = cv2.normalize(roi,  norm_img, 75, 255, cv2.NORM_MINMAX)
 
 
 
@@ -89,7 +102,6 @@ def eye(eye, value):
     contours = sorted(contours, key = lambda x: cv2.contourArea(x), reverse=True)
 
     for cnt in contours:
-        #cv2.drawContours(eye, [cnt], -1, (0, 0, 255), 1)
         x, y, w, h = cv2.boundingRect(contours[0])
         cv2.rectangle(eye, (x, y), (x + w, y + h), (51, 87, 255), 1)
         cv2.line(eye, (x + int(w/2), 0), (x + int(w/2),rows), (255, 0, 0), 1)
@@ -105,14 +117,16 @@ def eye_main():
     global is_on
     valueR = 0
     valueL = 0
-    multiplier = 4
+    multiplier = 1
     left_old = 0
     right_old = 0
     et = 0
     st = 0
     timeOld = 0
+    r = calibrate()
 
     while True:
+
 
         if (debug):
             os.system('CLS')
@@ -120,6 +134,7 @@ def eye_main():
             print("Left: ", left_slider)
             print("Right: ", right_slider)
             print("Normalizing: ", is_on)
+            
             timeTaken = et - st
             if (timeTaken != 0.0):
                 print("Runtime: ", timeTaken)
@@ -134,16 +149,21 @@ def eye_main():
         check, frame = cam.read()
         st = time.time()
         #check2, frame2 = cam2.read()
-        roi1 = frame[270:300, 323:380]#[200:300, 180:480]
 
-        roi2 = frame[270:300, 265:322]#[200:300, 180:480]
+        imCrop = frame[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+
+        h, w, channels = imCrop.shape
+        half = w//2
+
+        roi1 = imCrop[:, :half]
+
+        roi2 = imCrop[:, half:]
 
         eye1, coords_r = eye(roi2, valueR)
 
         eye2, coords_l = eye(roi1, valueL)
 
-        hori = np.concatenate((eye1, eye2), axis = 1)
-        verti = np.concatenate((eye1, eye2), axis = 0)
+        hori = np.concatenate((eye2, eye1), axis = 1)
 
         height = (hori.shape[0] * multiplier)
         width = (hori.shape[1] * multiplier)
@@ -154,11 +174,12 @@ def eye_main():
         cv2.imshow("hori", hori)
         et = time.time()
 
-        #cv2.imshow("test", frame2)
 
         key = cv2.waitKey(1)
         if key == 27:
             break
+        if key == 114:
+            r =calibrate()
 
 
 t1 = threading.Thread(target=eye_main)
